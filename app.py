@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-import psycopg2
+import psycopg
 
 from dotenv import load_dotenv
 import os
@@ -20,7 +20,7 @@ DATABASE_CONFIG = {
 }
 
 def get_db_connection():
-    conn = psycopg2.connect(**DATABASE_CONFIG)
+    conn = psycopg.connect(**DATABASE_CONFIG)
     return conn
 
 
