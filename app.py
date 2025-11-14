@@ -13,10 +13,10 @@ load_dotenv()
 # Slide "Connect from Python" and "DB setup" :contentReference[oaicite:2]{index=2}
 DATABASE_CONFIG = {
     "dbname": "company_portal_db",   
-    "user": "postgres",              
+    "user": os.getenv("DB_USER"),              
     "password": os.getenv("DB_PASSWORD"),
-    "host": "localhost",
-    "port": "5432",
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT"),
 }
 
 def get_db_connection():
