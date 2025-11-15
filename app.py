@@ -1,20 +1,26 @@
 from flask import Flask, render_template
-import psycopg2
+import psycopg
+
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
+
+# Load environment variables for database config credentials
+load_dotenv()
 
 # Same idea as the lab: DATABASE_CONFIG dict + get_db_connection()
 # Slide "Connect from Python" and "DB setup" :contentReference[oaicite:2]{index=2}
 DATABASE_CONFIG = {
     "dbname": "company_portal_db",   
-    "user": "postgres",              
-    "password": "04292004", 
-    "host": "localhost",
-    "port": "5432",
+    "user": os.getenv("DB_USER"),              
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT"),
 }
 
 def get_db_connection():
-    conn = psycopg2.connect(**DATABASE_CONFIG)
+    conn = psycopg.connect(**DATABASE_CONFIG)
     return conn
 
 
