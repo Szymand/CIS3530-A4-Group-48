@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+    <title>Employees Home</title>
+</head>
+<body>
+    <h1>Employees Page</h1>
+
+    <p>
+        Logged in as: {{ session.username }}
+        |
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </p>
+
+    <p>
+        A2 content will go here later (employee list, filters, etc.).
+    </p>
+</body>
+</html>

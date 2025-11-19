@@ -1,11 +1,15 @@
+import os
 import psycopg
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DATABASE_CONFIG = {
     "dbname": "company_portal_db",
-    "user": "postgres",
-    "password": "04292004",  
-    "host": "localhost",
-    "port": 5432,
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT"),
 }
 
 def get_db_connection():
