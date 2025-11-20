@@ -1,9 +1,9 @@
 # 1. Clone the repository
-git clone https://github.com/Szymand/CIS3530-A4-Group-48.git
-cd CIS3530-A4-Group-48
+```git clone https://github.com/Szymand/CIS3530-A4-Group-48.git```  
+```cd CIS3530-A4-Group-48```
 
 # 2. Create a virtual environment
-python -m venv .venv
+```python -m venv .venv```
 
 # 3. Activate the virtual environment
 Windows PowerShell:
@@ -20,8 +20,9 @@ Open a terminal or pgAdmin and run:
 ```CREATE DATABASE company_portal_db;```
 
 # 6. Load the SQL file into the database
-In PowerShell from the project directory:
-```& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d company_portal_db -f sql\company_v3.02.sql```
+In PowerShell from the project directory:  
+```& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d company_portal_db -f sql\company_v3.02.sql```  
+```& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d company_portal_db -f sql\team_setup.sql```  
 (Change the version number in the path if needed.)
 
 # 7. Create Dotenv file to hold PostgreSQL credentials
