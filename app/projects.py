@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.db import get_db_connection
 from psycopg import errors
 
@@ -7,6 +7,8 @@ projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
 # A3 -- All Projects
 @projects_bp.route("/all", methods=["GET", "POST"])
 def sort_projects():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -49,6 +51,9 @@ def sort_projects():
 # A4 -- Project Details    
 @projects_bp.route("/<pnumber>", methods=["GET", "POST"])
 def project_detail(pnumber):
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
     conn = get_db_connection()
     cur = conn.cursor()
     # Select all employees on the project and their hours
