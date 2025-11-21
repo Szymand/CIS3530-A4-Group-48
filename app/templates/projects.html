@@ -13,14 +13,14 @@
     </table>
 
     <h1>All Projects</h1>
-    <h3>Sort By:</h3>
     <form method="post">
-        <select name="method" id="sort">
+        <select name="method" id="sort" required>
+            <option value="" disabled selected hidden>Sort By...</option>
             <option value="project_number">Project Number</option>
             <option value="headcount">Headcount</option>
             <option value="total_hours">Total Hours</option>
         </select>
-        <input type="radio" id="ASC" name="direction" value="ASC" checked>
+        <input type="radio" id="ASC" name="direction" value="ASC" required>
         <label for "ASC">Ascending</label>
         <input type="radio" id="DESC" name="direction" value="DESC">
         <label for "dec">Decending</label>
