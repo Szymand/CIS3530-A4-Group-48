@@ -1,18 +1,18 @@
 from flask import Blueprint, render_template, request
 from app.db import get_db_connection
 
-projects_bp = Blueprint("projects", __name__)
+projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
 
-@projects_bp.route("/projects", methods=["GET", "POST"])
+@projects_bp.route("/all", methods=["GET", "POST"])
 def sort_projects():
     
     conn = get_db_connection()
     cur = conn.cursor()
     
-    whitelisted_methods=["headcount", "total_hours"]
+    whitelisted_methods=["headcount", "total_hours", "project_number"]
     whitelisted_directions=["ASC", "DESC"]
     
-    method = "headcount"
+    method = "project_number"
     direction = "ASC"
     if request.method == "POST": # On sorting options applied 
         
@@ -26,7 +26,8 @@ def sort_projects():
 
     cur.execute(
         f"""
-        SELECT 
+        SELECT
+            p.pnumber AS project_number, 
             p.pname AS project_name, 
             d.dname AS owning_department, 
             COUNT(w.essn) AS headcount,

@@ -10,6 +10,7 @@
     <h3>Sort By:</h3>
     <form method="post">
         <select name="method" id="sort">
+            <option value="project_number">Project Number</option>
             <option value="headcount">Headcount</option>
             <option value="total_hours">Total Hours</option>
         </select>
@@ -22,6 +23,7 @@
     <hr>
     <table border="1">
         <tr>
+            <th>Project Number</th>
             <th>Project Name</th>
             <th>Owning Department</th>
             <th>Headcount</th>
@@ -34,6 +36,7 @@
             <td>{{project[1]}}</td>
             <td>{{project[2]}}</td>
             <td>{{project[3]}}</td>
+            <td>{{project[4]}}</td>
         </tr>
         {% endfor %}
     </table>
