@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect, url_for
 from app.db import get_db_connection
 
 projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
@@ -50,6 +50,7 @@ def sort_projects():
 def project_detail(pnumber):
     conn = get_db_connection()
     cur = conn.cursor()
+    # Select all employees on the project and their hours
     cur.execute(
         """
         SELECT 
@@ -59,14 +60,58 @@ def project_detail(pnumber):
             w.hours as hours
         FROM employee e
         JOIN works_on w ON e.ssn = w.essn
-        WHERE w.pno = %s;
+        WHERE w.pno = %s
+        ORDER BY e.fname;
         """,
         (pnumber,)
     )
     project_details = cur.fetchall()
+    
+    # Select all employees in the database
+    cur.execute(
+        """
+        SELECT 
+            ROW_NUMBER() OVER (ORDER BY e.fname) AS rownum,
+            e.fname AS first_name, 
+            e.minit AS middle_initial,
+            e.lname AS last_name
+        FROM employee e;
+
+        """
+    )
+    all_employees = cur.fetchall()
+    
+    # A4 Part 2: Employee Upsert Form submission
+    if request.method == "POST":
+        employee_n = int(request.form.get("employee", "")) # using index in case two employees have the same full name
+        hours = request.form.get("hours", "")
+        
+        cur.execute(
+            """
+            SELECT ssn
+            FROM employee
+            ORDER BY fname
+            """
+        )
+        employee_ssns = cur.fetchall()
+        target_ssn = employee_ssns[employee_n-1][0] #get the ssn of the employee we want
+        #add the employee to the works_on for that pnumber, or update their hours 
+        cur.execute(
+            """
+            INSERT INTO works_on (essn, pno, hours)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (essn, pno)
+            DO UPDATE SET hours = works_on.hours + EXCLUDED.hours;
+            """,
+            (target_ssn, pnumber, hours)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("projects.project_detail", pnumber=pnumber))    
     cur.close()
     conn.close()
-    return render_template("project_detail.html", details=project_details, pnumber=pnumber)
+    return render_template("project_detail.html", details=project_details, pnumber=pnumber, employees=all_employees)
 
 
     
