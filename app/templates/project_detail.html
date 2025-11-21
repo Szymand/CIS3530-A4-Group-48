@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Project {{pnumber}} Details:</h1>
+
+    <table border="1">
+        <tr>
+            <th>Full Name</th>
+            <th> Hours </th>
+        </tr>
+        {% if details %}
+        {% for row in details %}
+        <tr>
+            <td>{{row[0]}} {{row[1]}}. {{row[2]}}</td>
+            <td>{{row[3]}}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <p><strong>No employees working on project {{pnumber}}</strong></p>
+        {%endif%}
+
+    </table>
+</body>
+</html>

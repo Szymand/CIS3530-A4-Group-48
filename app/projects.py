@@ -3,6 +3,7 @@ from app.db import get_db_connection
 
 projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
 
+# A3 -- All Projects
 @projects_bp.route("/all", methods=["GET", "POST"])
 def sort_projects():
     
@@ -43,7 +44,31 @@ def sort_projects():
     cur.close()
     conn.close()
     return render_template("projects.html", projects=project_list)
-    
+
+# A4 -- Project Details    
+@projects_bp.route("/<pnumber>", methods=["GET", "POST"])
+def project_detail(pnumber):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT 
+            e.fname as first_name, 
+            e.minit as middle_initial,
+            e.lname as last_name, 
+            w.hours as hours
+        FROM employee e
+        JOIN works_on w ON e.ssn = w.essn
+        WHERE w.pno = %s;
+        """,
+        (pnumber,)
+    )
+    project_details = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("project_detail.html", details=project_details, pnumber=pnumber)
+
+
     
     
     
