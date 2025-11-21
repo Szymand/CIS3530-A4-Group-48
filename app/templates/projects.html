@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projects List</title>
+</head>
+<body>
+
+    <h1>All Projects</h1>
+    <h3>Sort By:</h3>
+    <form method="post">
+        <select name="method" id="sort">
+            <option value="headcount">Headcount</option>
+            <option value="total_hours">Total Hours</option>
+        </select>
+        <input type="radio" id="ASC" name="direction" value="ASC" checked>
+        <label for "ASC">Ascending</label>
+        <input type="radio" id="DESC" name="direction" value="DESC">
+        <label for "dec">Decending</label>
+        <input type="submit" value="Apply">
+    </form>
+    <hr>
+    <table border="1">
+        <tr>
+            <th>Project Name</th>
+            <th>Owning Department</th>
+            <th>Headcount</th>
+            <th>Total Assigned Hours</th>
+        </tr>
+
+        {% for project in projects %}
+        <tr>
+            <td>{{project[0]}}</td>
+            <td>{{project[1]}}</td>
+            <td>{{project[2]}}</td>
+            <td>{{project[3]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
