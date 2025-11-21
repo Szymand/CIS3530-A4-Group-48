@@ -5,6 +5,12 @@
     <title>Projects List</title>
 </head>
 <body>
+    <table border="1">
+        <tr>
+            <th><a href="/">Employees Page</a></th>
+            <th><a href="{{ url_for('auth.logout') }}">Logout</a></th>
+        </tr>
+    </table>
 
     <h1>All Projects</h1>
     <h3>Sort By:</h3>
@@ -33,7 +39,11 @@
         {% for project in projects %}
         <tr>
             <td>{{project[0]}}</td>
-            <td><a href="/projects/{{project[0]}}">{{project[1]}}</a></td>
+            <td>
+                <a href="{{ url_for('projects.project_detail', pnumber=project[0]) }}">
+                    {{ project[1] }}
+                </a>
+            </td>
             <td>{{project[2]}}</td>
             <td>{{project[3]}}</td>
             <td>{{project[4]}}</td>
