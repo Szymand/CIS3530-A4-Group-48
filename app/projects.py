@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.db import get_db_connection
+from psycopg import errors
 
 projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
 
@@ -96,24 +97,24 @@ def project_detail(pnumber):
         employee_ssns = cur.fetchall()
         target_ssn = employee_ssns[employee_n-1][0] #get the ssn of the employee we want
         #add the employee to the works_on for that pnumber, or update their hours 
-        cur.execute(
-            """
-            INSERT INTO works_on (essn, pno, hours)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (essn, pno)
-            DO UPDATE SET hours = works_on.hours + EXCLUDED.hours;
-            """,
-            (target_ssn, pnumber, hours)
-        )
-        conn.commit()
+        try:
+            cur.execute(
+                """
+                INSERT INTO works_on (essn, pno, hours)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (essn, pno)
+                DO UPDATE SET hours = works_on.hours + EXCLUDED.hours;
+                """,
+                (target_ssn, pnumber, hours)
+            )
+            conn.commit()
+        except errors.NumericValueOutOfRange:
+            conn.rollback()
+            print("\033[1;91mError: Cannot add more hours to employee (max hours is 999.9)\033[0m")
+            flash("Cannot add more hours to employee (max hours is 999.9 per employee)", "error")
         cur.close()
         conn.close()
         return redirect(url_for("projects.project_detail", pnumber=pnumber))    
     cur.close()
     conn.close()
     return render_template("project_detail.html", details=project_details, pnumber=pnumber, employees=all_employees)
-
-
-    
-    
-    
