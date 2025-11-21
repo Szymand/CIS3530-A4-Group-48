@@ -30,6 +30,14 @@
 
     <h3>Employee Upsert Form</h3>
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <p style="color: red;">
+                {{ messages[0] }}
+            </p>
+        {% endif %}
+    {% endwith %}
+
     <form method="POST">
         <label for="employee">Select an employee:</label>
         <select name="employee" id="employee" required>
