@@ -31,14 +31,15 @@
 
     <form method="POST">
         <label for="employee">Select an employee:</label>
-        <select name="employee" id="employee">
+        <select name="employee" id="employee" required>
+            <option value="" disabled selected hidden>Select an employee...</option>
             {% for employee in employees %}
                 <option value="{{ employee[0] }}">{{employee[1]}} {{employee[2]}}. {{employee[3]}}</option>
             {% endfor %}
         </select>
         <br>
         <label for="hours">Enter number of hours to add: </label>
-        <input type="number" name="hours" id="hours" required>
+        <input type="number" name="hours" id="hours" step="0.1" required>
         <br>
         <input type="submit" value="Submit">
     </form>
