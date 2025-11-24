@@ -16,7 +16,7 @@ conn = psycopg.connect(
 cur = conn.cursor()
 
 username = "admin"
-password = "test123"   # choose your password
+password = "test123"   
     
 
 password_hash = generate_password_hash(password)
