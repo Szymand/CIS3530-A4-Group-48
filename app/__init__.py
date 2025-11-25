@@ -18,9 +18,11 @@ def create_app():
     from app.auth import auth_bp
     from app.employees import employees_bp
     from app.projects import projects_bp
+    from app.employee_management import employe_management_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(employees_bp)
     app.register_blueprint(projects_bp)
+    app.register_blueprint(employee_management_bp)
 
     return app
