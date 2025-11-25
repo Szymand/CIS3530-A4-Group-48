@@ -37,10 +37,13 @@ In PowerShell from the project directory:
     ```
     * replace ```DB_USER```, ```DB_HOST```, and ```DB_PORT``` if your credentials do not match the defaults
 
-# 8. Run the Flask app
+# 8 Add the Test Account to the Database
+From the main project directory, run the command below, and the one in step 9  
+```python insert_user.py``` 
+# 9. Run the Flask app
 ```python app.py```
 
-# 9. Open a browser and go to:
+# 10. Open a browser and go to:
 http://127.0.0.1:5000/
 
 You should see the Flask test page with the current date from the database.
