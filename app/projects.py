@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
 from app.db import get_db_connection
 from psycopg import errors
+import csv
+from io import StringIO
 
 projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
 
@@ -46,7 +48,7 @@ def sort_projects():
     project_list = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("projects.html", projects=project_list)
+    return render_template("projects.html", projects=project_list, selected_method=method, selected_direction=direction)
 
 # A4 -- Project Details    
 @projects_bp.route("/<pnumber>", methods=["GET", "POST"])
@@ -123,3 +125,51 @@ def project_detail(pnumber):
     cur.close()
     conn.close()
     return render_template("project_detail.html", details=project_details, pnumber=pnumber, employees=all_employees)
+
+@projects_bp.route("/download/<method>/<direction>", methods=["POST"])
+def download_projects(method, direction): 
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
+    whitelisted_methods=["headcount", "total_hours", "project_number"]
+    whitelisted_directions=["ASC", "DESC"]
+    
+    # Validate inputs against whitelisted options before querying  
+    if method not in whitelisted_methods:
+        method = "headcount"
+    if direction not in whitelisted_directions:
+        direction = "ASC"
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        f"""
+        SELECT
+            p.pnumber AS project_number, 
+            p.pname AS project_name, 
+            d.dname AS owning_department, 
+            COUNT(w.essn) AS headcount,
+            COALESCE(SUM(w.hours), 0) AS total_hours  
+        FROM project p
+        JOIN department d ON p.dnum = d.dnumber
+        LEFT JOIN works_on w ON p.pnumber = w.pno
+        GROUP BY p.pnumber, d.dnumber
+        ORDER BY {method} {direction};
+        """
+    )
+    project_list = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    # Generate CSV
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(["Project_Number", "Project_Name", "Owning_Department", "Headcount", "Total_Hours"])
+    cw.writerows(project_list)
+    output = si.getvalue()
+
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=projects.csv"}
+    )

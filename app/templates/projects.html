@@ -13,16 +13,15 @@
     </table>
 
     <h1>All Projects</h1>
-    <form method="post">
+    <form method="post" id="sort_settings">
         <select name="method" id="sort" required>
-            <option value="" disabled selected hidden>Sort By...</option>
-            <option value="project_number">Project Number</option>
-            <option value="headcount">Headcount</option>
-            <option value="total_hours">Total Hours</option>
+            <option value="project_number" {% if selected_method == "project_number" %}selected{% endif %}>Project Number</option>
+            <option value="headcount" {% if selected_method == "headcount" %}selected{% endif %}>Headcount</option>
+            <option value="total_hours" {% if selected_method == "total_hours" %}selected{% endif %}>Total Hours</option>
         </select>
-        <input type="radio" id="ASC" name="direction" value="ASC" required>
+        <input type="radio" id="ASC" name="direction" value="ASC" required {% if selected_direction == "ASC" %}checked{% endif %}>
         <label for "ASC">Ascending</label>
-        <input type="radio" id="DESC" name="direction" value="DESC">
+        <input type="radio" id="DESC" name="direction" value="DESC" {% if selected_direction == "DESC" %}checked{% endif %}>
         <label for "dec">Decending</label>
         <input type="submit" value="Apply">
     </form>
@@ -50,6 +49,10 @@
         </tr>
         {% endfor %}
     </table>
+    <br>
+    <button type="submit" form="sort_settings" formaction="{{ url_for('projects.download_projects', method=selected_method, direction=selected_direction) }}">
+        Download Projects CSV
+    </button>
 
 </body>
 </html>
