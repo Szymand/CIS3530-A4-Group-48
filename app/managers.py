@@ -40,3 +40,12 @@ def managers_overview():
     except Exception as e:
         return render_template("managers.html", departments=[])
 
+
+# Excel Import Bonus Feature (test)
+@managers_bp.route("/import", methods=["GET"])
+def import_departments_form():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
+    return "Import form would go here - route is working!"
+
