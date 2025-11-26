@@ -21,7 +21,7 @@ def managers_overview():
                 d.dname AS department_name,
                 d.dnumber AS department_number,
                 COALESCE(e.fname || ' ' || e.minit || '. ' || e.lname, 'N/A') AS manager_name,
-                COUNT(emp.ssn) AS employee_count,
+                COUNT(DISTINCT emp.ssn) AS employee_count,
                 COALESCE(SUM(w.hours), 0) AS total_hours
             FROM department d
             LEFT JOIN employee e ON d.mgr_ssn = e.ssn
