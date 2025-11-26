@@ -26,11 +26,11 @@ def manage_employees():
         cur.close()
         conn.close()
         
-        return render_template("employee_management/employee_list.html", employees=employees)
+        return render_template("employee_list.html", employees=employees)
     
     except Exception as e:
         flash(f"Error loading employees: {str(e)}", "error")
-        return render_template("employee_management/employee_list.html", employees=[])
+        return render_template("employee_list.html", employees=[])
 
 # A5: Add Employee Form
 @employee_management_bp.route("/add", methods=["GET"])
@@ -68,9 +68,10 @@ def add_employee():
     address = request.form.get("address", "").strip()
     salary = request.form.get("salary", "").strip()
     dno = request.form.get("dno", "").strip()
+    sex = request.form.get("sex", "").strip()
     
     # Validation
-    if not all([ssn, fname, lname, address, salary, dno]):
+    if not all([ssn, fname, lname, address, salary, dno, sex]):
         flash("All fields are required", "error")
         return redirect(url_for("employee_management.add_employee_form"))
     
@@ -89,9 +90,9 @@ def add_employee():
         
         # Insert new employee
         cur.execute("""
-            INSERT INTO employee (ssn, fname, minit, lname, address, salary, dno)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (ssn, fname, minit, lname, address, salary, dno))
+            INSERT INTO employee (ssn, fname, minit, lname, address, salary, dno, sex)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (ssn, fname, minit, lname, address, salary, dno, sex))
         
         conn.commit()
         cur.close()
