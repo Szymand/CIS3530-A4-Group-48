@@ -110,10 +110,16 @@ def import_departments():
                 
             except errors.UniqueViolation:
                 error_rows.append(f"Row {row_num}: Department number {dnumber} already exists")
+                conn.rollback()
+                continue
             except errors.ForeignKeyViolation:
                 error_rows.append(f"Row {row_num}: Manager SSN {mgr_ssn} not found in employees")
+                conn.rollback()
+                continue
             except Exception as e:
                 error_rows.append(f"Row {row_num}: {str(e)}")
+                conn.rollback()
+                continue
         
         if success_count > 0:
             conn.commit()
@@ -132,5 +138,3 @@ def import_departments():
         flash(f'Error processing file: {str(e)}', 'error')
     
     return redirect(url_for('managers.import_departments_form'))
-
-
