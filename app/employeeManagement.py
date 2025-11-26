@@ -69,9 +69,12 @@ def add_employee():
     salary = request.form.get("salary", "").strip()
     dno = request.form.get("dno", "").strip()
     sex = request.form.get("sex", "").strip()
+    super_ssn = request.form.get("super_ssn", "").strip()
+    birthdate = request.form.get("birthdate", "").strip()
+    empdate = request.form.get("empdate", "").strip()
     
     # Validation
-    if not all([ssn, fname, lname, address, salary, dno, sex]):
+    if not all([ssn, fname, minit, lname, address, salary, dno, sex]):
         flash("All fields are required", "error")
         return redirect(url_for("employee_management.add_employee_form"))
     
@@ -90,9 +93,9 @@ def add_employee():
         
         # Insert new employee
         cur.execute("""
-            INSERT INTO employee (ssn, fname, minit, lname, address, salary, dno, sex)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (ssn, fname, minit, lname, address, salary, dno, sex))
+            INSERT INTO employee (ssn, fname, minit, lname, address, salary, dno, sex, super_ssn, bdate, empdate)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (ssn, fname, minit, lname, address, salary, dno, sex, super_ssn, birthdate, empdate))
         
         conn.commit()
         cur.close()
