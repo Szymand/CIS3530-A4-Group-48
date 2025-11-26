@@ -26,11 +26,11 @@ def manage_employees():
         cur.close()
         conn.close()
         
-        return render_template("employee_list.html", employees=employees)
+        return render_template("employee_management/employee_list.html", employees=employees)
     
     except Exception as e:
         flash(f"Error loading employees: {str(e)}", "error")
-        return render_template("employee_list.html", employees=[])
+        return render_template("employee_management/employee_list.html", employees=[])
 
 # A5: Add Employee Form
 @employee_management_bp.route("/add", methods=["GET"])
