@@ -46,7 +46,7 @@
                     <h5 class="card-title mb-0">Excel File Format</h5>
                 </div>
                 <div class="card-body">
-                    <p>Your Excel file should have the following columns:</p>
+                    <p>Your Excel file should have the following columns <strong>with headers in the first row</strong>:</p>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -54,41 +54,43 @@
                                 <th>Column 2</th>
                                 <th>Column 3</th>
                             </tr>
+                            <tr>
+                                <th><strong>Department Number</strong> (required)</th>
+                                <th><strong>Department Name</strong> (required)</th>
+                                <th><strong>Manager SSN</strong> (optional)</th>
+                            </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Department Number</strong> (required)</td>
-                                <td><strong>Department Name</strong> (required)</td>
-                                <td><strong>Manager SSN</strong> (optional)</td>
-                            </tr>
-                            <tr>
-                                <td>Integer</td>
-                                <td>Text</td>
-                                <td>9-digit number or blank</td>
-                            </tr>
-                        </tbody>
                     </table>
                     
-                    <p><strong>Example data:</strong></p>
+                    <p><strong>Example with headers:</strong></p>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>1</th>
-                                <th>Research</th>
-                                <th>333445555</th>
+                                <th>Department Number</th>
+                                <th>Department Name</th>
+                                <th>Manager SSN</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>6</td>
+                                <td>10</td>
                                 <td>Quality Assurance</td>
+                                <td>333445555</td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>Customer Support</td>
                                 <td></td>
                             </tr>
                         </tbody>
                     </table>
                     
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> The first row should contain column headers. Data import starts from row 2.
+                    </div>
+                    
                     <p class="text-muted">
-                        <strong>Note:</strong> Department numbers must be unique. Manager SSN must exist in the employee table.
+                        <strong>Validation rules:</strong> Department numbers must be unique. Manager SSN must exist in the employee table.
                     </p>
                 </div>
             </div>
