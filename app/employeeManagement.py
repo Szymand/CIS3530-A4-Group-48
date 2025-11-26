@@ -4,7 +4,7 @@ from psycopg import errors
 
 employee_management_bp = Blueprint("employee_management", __name__, url_prefix="/employees")
 
-# A5 Employee List
+# A5: Employee List
 @employee_management_bp.route("/manage")
 def manage_employees():
     if "user_id" not in session:
@@ -26,13 +26,13 @@ def manage_employees():
         cur.close()
         conn.close()
         
-        return render_template("employee_management/employee_list.html", employees=employees)
+        return render_template("employee_list.html", employees=employees)
     
     except Exception as e:
         flash(f"Error loading employees: {str(e)}", "error")
-        return render_template("employee_management/employee_list.html", employees=[])
+        return render_template("employee_list.html", employees=[])
 
-# A5 Employee Form
+# A5: Add Employee Form
 @employee_management_bp.route("/add", methods=["GET"])
 def add_employee_form():
     if "user_id" not in session:
@@ -42,20 +42,20 @@ def add_employee_form():
         conn = get_db_connection()
         cur = conn.cursor()
         
-        #get departments
+        # Get departments for dropdown
         cur.execute("SELECT dnumber, dname FROM department ORDER BY dname")
         departments = cur.fetchall()
         
         cur.close()
         conn.close()
         
-        return render_template("employee_management/add_employee.html", departments=departments)
+        return render_template("add_employee.html", departments=departments)
     
     except Exception as e:
         flash(f"Error loading form: {str(e)}", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
-# A5 Adding the employee submission
+# A5: Add Employee Submission
 @employee_management_bp.route("/add", methods=["POST"])
 def add_employee():
     if "user_id" not in session:
@@ -86,8 +86,8 @@ def add_employee():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-
-        #add new employee
+        
+        # Insert new employee
         cur.execute("""
             INSERT INTO employee (ssn, fname, minit, lname, address, salary, dno)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -110,7 +110,7 @@ def add_employee():
         flash(f"Error adding employee: {str(e)}", "error")
         return redirect(url_for("employee_management.add_employee_form"))
 
-# A5 edit employee form
+# A5: Edit Employee Form
 @employee_management_bp.route("/edit/<ssn>", methods=["GET"])
 def edit_employee_form(ssn):
     if "user_id" not in session:
@@ -138,14 +138,14 @@ def edit_employee_form(ssn):
         cur.close()
         conn.close()
         
-        return render_template("employee_management/edit_employee.html", 
+        return render_template("edit_employee.html", 
                              employee=employee, departments=departments)
     
     except Exception as e:
         flash(f"Error loading employee: {str(e)}", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
-# A5 edit employee submission
+# A5: Edit Employee Submission
 @employee_management_bp.route("/edit/<ssn>", methods=["POST"])
 def edit_employee(ssn):
     if "user_id" not in session:
@@ -155,6 +155,7 @@ def edit_employee(ssn):
     salary = request.form.get("salary", "").strip()
     dno = request.form.get("dno", "").strip()
     
+    # Validation
     if not all([address, salary, dno]):
         flash("All fields are required", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
@@ -193,7 +194,7 @@ def edit_employee(ssn):
         flash(f"Error updating employee: {str(e)}", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
 
-# A5 delete employee
+# A5: Delete Employee
 @employee_management_bp.route("/delete/<ssn>", methods=["POST"])
 def delete_employee(ssn):
     if "user_id" not in session:
