@@ -5,13 +5,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <table border="1" class="nav-table">
+        <tr>
+            <th><a href="/">Employees</a></th>
+            <th><a>Employee Management</a></th>
+            <th><a href="{{ url_for('projects.sort_projects') }}">All Projects</a></th>
+            <th>(Logged in as: {{ session.username }}) <a href="{{ url_for('auth.logout') }}">Logout</a></th>
+        </tr>
+    </table>
     <h1>Employees Overview</h1>
-
-    <p>
-        Logged in as: {{ session.username }}
-        |
-        <a href="{{ url_for('auth.logout') }}">Logout</a>
-    </p>
 
     <h3>Filters</h3>
     <form method="get">
