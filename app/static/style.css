@@ -124,6 +124,7 @@ table:not(.nav-table) tr:hover td {
 .nav-table th {
     padding: 14px 20px;
     text-align: center;
+    color:rgb(188, 228, 231);
 }
 
 .nav-table a {
