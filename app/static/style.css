@@ -63,7 +63,7 @@ select {
 
 input[type="submit"],
 button[type="submit"],
-button,
+button:not(.delete),
 input[type="button"] {
     background-color: #00c853;
     color: white;
@@ -136,4 +136,13 @@ table:not(.nav-table) tr:hover td {
 
 .nav-table a:hover {
     text-decoration: underline;
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+button.delete{
+    background-color: #ff3b3b;
 }
