@@ -40,7 +40,7 @@ def managers_overview():
     except Exception as e:
         return render_template("managers.html", departments=[])
 
-# excel imports (bonus features)
+# Excel Import Bonus Feature
 @managers_bp.route("/import", methods=["GET"])
 def import_departments_form():
     if "user_id" not in session:
@@ -55,20 +55,19 @@ def import_departments():
     
     if 'file' not in request.files:
         flash('No file selected', 'error')
-        return redirect(url_for('managers.import_departments_form'))
+        return redirect(request.url)
     
     file = request.files['file']
     
     if file.filename == '':
         flash('No file selected', 'error')
-        return redirect(url_for('managers.import_departments_form'))
+        return redirect(request.url)
     
     if not file.filename.endswith('.xlsx'):
         flash('Only .xlsx files are allowed', 'error')
-        return redirect(url_for('managers.import_departments_form'))
+        return redirect(request.url)
     
     try:
-        
         workbook = openpyxl.load_workbook(file)
         sheet = workbook.active
         
@@ -78,18 +77,21 @@ def import_departments():
         success_count = 0
         error_rows = []
         
-        # Process each row 
-        for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-            if not any(row):  # skip empty rows
+        # Skip header row (row 1), start from row 2
+        for row_num in range(2, sheet.max_row + 1):
+            dnumber = sheet.cell(row=row_num, column=1).value
+            dname = sheet.cell(row=row_num, column=2).value
+            mgr_ssn = sheet.cell(row=row_num, column=3).value
+            
+            # Skip empty rows
+            if dnumber is None and dname is None:
                 continue
                 
             try:
-                # Expected columns: dnumber, dname, mgr_ssn
-                if len(row) < 3 or not all([row[0], row[1]]):  # dnumber and dname required
+                # Validate required fields
+                if dnumber is None or dname is None:
                     error_rows.append(f"Row {row_num}: Missing required fields")
                     continue
-                
-                dnumber, dname, mgr_ssn = row[0], row[1], row[2] if len(row) > 2 else None
                 
                 # Validate data types
                 try:
@@ -108,23 +110,20 @@ def import_departments():
                 
             except errors.UniqueViolation:
                 error_rows.append(f"Row {row_num}: Department number {dnumber} already exists")
-                conn.rollback()
             except errors.ForeignKeyViolation:
                 error_rows.append(f"Row {row_num}: Manager SSN {mgr_ssn} not found in employees")
-                conn.rollback()
             except Exception as e:
                 error_rows.append(f"Row {row_num}: {str(e)}")
-                conn.rollback()
         
         if success_count > 0:
             conn.commit()
             flash(f'Successfully imported {success_count} departments', 'success')
         
         if error_rows:
-            flash_errors = " | ".join(error_rows[:5])  # Show first 5 errors
+            error_message = " | ".join(error_rows[:5])
             if len(error_rows) > 5:
-                flash_errors += f" ... and {len(error_rows) - 5} more errors"
-            flash(f'Import errors: {flash_errors}', 'error')
+                error_message += f" ... and {len(error_rows) - 5} more errors"
+            flash(f'Import errors: {error_message}', 'error')
         
         cur.close()
         conn.close()
@@ -133,3 +132,5 @@ def import_departments():
         flash(f'Error processing file: {str(e)}', 'error')
     
     return redirect(url_for('managers.import_departments_form'))
+
+

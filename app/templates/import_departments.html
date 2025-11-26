@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Import Departments{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h1>Import Departments from Excel</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upload Excel File</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('managers.import_departments') }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="file">Select Excel File (.xlsx)</label>
+                            <input type="file" class="form-control-file" id="file" name="file" accept=".xlsx" required>
+                            <small class="form-text text-muted">
+                                Only .xlsx files are supported.
+                            </small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Import Departments</button>
+                        <a href="{{ url_for('managers.managers_overview') }}" class="btn btn-secondary">Back to Overview</a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Excel File Format</h5>
+                </div>
+                <div class="card-body">
+                    <p>Your Excel file should have the following columns:</p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Column 1</th>
+                                <th>Column 2</th>
+                                <th>Column 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Department Number</strong> (required)</td>
+                                <td><strong>Department Name</strong> (required)</td>
+                                <td><strong>Manager SSN</strong> (optional)</td>
+                            </tr>
+                            <tr>
+                                <td>Integer</td>
+                                <td>Text</td>
+                                <td>9-digit number or blank</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p><strong>Example data:</strong></p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>1</th>
+                                <th>Research</th>
+                                <th>333445555</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>6</td>
+                                <td>Quality Assurance</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p class="text-muted">
+                        <strong>Note:</strong> Department numbers must be unique. Manager SSN must exist in the employee table.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
