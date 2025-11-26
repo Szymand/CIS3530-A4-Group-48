@@ -48,3 +48,17 @@ http://127.0.0.1:5000/
 
 You should see the Flask test page with the current date from the database.
 If you get a connection error, make sure PostgreSQL is running and the password in app.py matches your local setup.
+
+# 11. Indexes
+The first index implemented is idx_employee_name on Employee(Lname, Fname) this index imporves performance on the home page (A2), where employees
+are searched and sorted by name. The page orders results using ORDER by full_name also allowing partial name filtering. Since we have built full_name from Lname and Fname, Postgres can use this index to avoid a full table scan and reduce the cost of sorting employees alphabetically. This speeds up both name searches and default page load when the employee list is ordered by name. 
+
+The second index is idx_workson_pno on Works_On(Pno), this index speeds up queries that retrieve project related stats on the Home page. The proj_stats CTE groups by project number and aggregates hours and project counts: 
+
+SELECT Essn, COUNT(DISTINCT Pno), SUM(Hours)
+FROM Works_On
+GROUP BY Essn;
+
+When we aggregate by project or feth all employees on a specific project, the index on Pno helps it avoid scanning the entire Works_on table. This makes the page's project and hours calculations more efficient. 
+
+Both of these indexes can be found within team_setup.sql like required.
