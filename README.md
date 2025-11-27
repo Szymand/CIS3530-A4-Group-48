@@ -16,7 +16,9 @@ Then activate again.
 ```pip install -r requirements.txt```
 
 # 5. Create the PostgreSQL database
-Open a terminal or pgAdmin and run:
+Open a terminal and run:
+```& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres```  
+Sign into PostgreSQL then run the following:  
 ```CREATE DATABASE company_portal_db;```
 
 # 6. Load the SQL file into the database
