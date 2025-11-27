@@ -56,37 +56,48 @@ def project_detail(pnumber):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # Select all employees on the project and their hours
-    cur.execute(
-        """
-        SELECT 
-            e.fname as first_name, 
-            e.minit as middle_initial,
-            e.lname as last_name, 
-            w.hours as hours
-        FROM employee e
-        JOIN works_on w ON e.ssn = w.essn
-        WHERE w.pno = %s
-        ORDER BY e.fname;
-        """,
-        (pnumber,)
-    )
-    project_details = cur.fetchall()
-    
-    # Select all employees in the database
-    cur.execute(
-        """
-        SELECT 
-            ROW_NUMBER() OVER (ORDER BY e.fname) AS rownum,
-            e.fname AS first_name, 
-            e.minit AS middle_initial,
-            e.lname AS last_name
-        FROM employee e;
-        """
-    )
-    all_employees = cur.fetchall()
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        # Select all employees on the project and their hours
+        cur.execute(
+            """
+            SELECT 
+                e.fname as first_name, 
+                e.minit as middle_initial,
+                e.lname as last_name, 
+                w.hours as hours
+            FROM employee e
+            JOIN works_on w ON e.ssn = w.essn
+            WHERE w.pno = %s
+            ORDER BY e.fname;
+            """,
+            (pnumber,)
+        )
+        project_details = cur.fetchall()
+        
+        # Select all employees in the database
+        cur.execute(
+            """
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY e.fname) AS rownum,
+                e.fname AS first_name, 
+                e.minit AS middle_initial,
+                e.lname AS last_name
+            FROM employee e;
+            """
+        )
+        all_employees = cur.fetchall()
+    except Exception as e:
+        flash("An error occurred while fetching project details.", "error")
+        print(f"\033[1;91mError fetching project details: {str(e)}\033[0m")
+
+        cur.close()
+        conn.close()
+        return render_template("project_detail.html",
+                           details=project_details,
+                           pnumber=pnumber,
+                           employees=all_employees)
     
     # A4 Part 2: Employee Upsert Form submission (admin only)
     if request.method == "POST":
@@ -99,18 +110,18 @@ def project_detail(pnumber):
 
         employee_n = int(request.form.get("employee", ""))  # using index in case two employees have the same full name
         hours = request.form.get("hours", "")
-        
-        cur.execute(
-            """
-            SELECT ssn
-            FROM employee
-            ORDER BY fname
-            """
-        )
-        employee_ssns = cur.fetchall()
-        target_ssn = employee_ssns[employee_n - 1][0]  # get the ssn of the employee we want
-        # add the employee to works_on for that pnumber, or update their hours 
         try:
+            cur.execute(
+                """
+                SELECT ssn
+                FROM employee
+                ORDER BY fname
+                """
+            )
+            employee_ssns = cur.fetchall()
+            target_ssn = employee_ssns[employee_n - 1][0]  # get the ssn of the employee we want
+            # add the employee to works_on for that pnumber, or update their hours 
+        
             cur.execute(
                 """
                 INSERT INTO works_on (essn, pno, hours)
@@ -125,6 +136,10 @@ def project_detail(pnumber):
             conn.rollback()
             print("\033[1;91mError: Cannot add more hours to employee (max hours is 999.9)\033[0m")
             flash("Cannot add more hours to employee (max hours is 999.9 per employee)", "error")
+        except Exception as e:
+            conn.rollback()
+            print(f"\033[1;91mError adding/updating employee hours: {str(e)}\033[0m")
+            flash(f"Error adding/updating employee hours", "error")
         cur.close()
         conn.close()
         return redirect(url_for("projects.project_detail", pnumber=pnumber))
