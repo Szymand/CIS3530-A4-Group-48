@@ -29,7 +29,8 @@ def manage_employees():
         return render_template("employee_list.html", employees=employees)
     
     except Exception as e:
-        flash(f"Error loading employees: {str(e)}", "error")
+        print(f"Error loading employees: {e}")
+        flash("An unexpected error occurred while loading employees.", "error")
         return render_template("employee_list.html", employees=[])
 
 # A5: Add Employee Form (admin only)
@@ -55,7 +56,8 @@ def add_employee_form():
         return render_template("add_employee.html", departments=departments)
     
     except Exception as e:
-        flash(f"Error loading form: {str(e)}", "error")
+        print(f"Error loading add employee form: {e}")
+        flash("An unexpected error occurred while loading the form.", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
 # A5: Add Employee Submission (admin only)
@@ -87,12 +89,14 @@ def add_employee():
     try:
         salary = float(salary)
         if salary <= 0:
-            flash("Salary must be positive", "error")
+            flash("Salary must be positive.", "error")
             return redirect(url_for("employee_management.add_employee_form"))
     except ValueError:
-        flash("Salary must be a valid number", "error")
+        flash("Salary must be a valid number.", "error")
         return redirect(url_for("employee_management.add_employee_form"))
     
+    conn = None
+    cur = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -104,21 +108,31 @@ def add_employee():
         """, (ssn, fname, minit, lname, address, salary, dno, sex, super_ssn, birthdate, empdate))
         
         conn.commit()
-        cur.close()
-        conn.close()
         
-        flash("Employee added successfully", "success")
+        flash("Employee added successfully.", "success")
         return redirect(url_for("employee_management.manage_employees"))
     
     except errors.UniqueViolation:
-        flash("Error: SSN must be unique", "error")
+        if conn:
+            conn.rollback()
+        flash("Error: SSN must be unique.", "error")
         return redirect(url_for("employee_management.add_employee_form"))
     except errors.ForeignKeyViolation:
-        flash("Error: Invalid department number", "error")
+        if conn:
+            conn.rollback()
+        flash("Error: Invalid department number or supervisor SSN.", "error")
         return redirect(url_for("employee_management.add_employee_form"))
     except Exception as e:
-        flash(f"Error adding employee: {str(e)}", "error")
+        if conn:
+            conn.rollback()
+        print(f"Unexpected error adding employee: {e}")
+        flash("An unexpected error occurred while adding the employee.", "error")
         return redirect(url_for("employee_management.add_employee_form"))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # A5: Edit Employee Form (admin only)
 @employee_management_bp.route("/edit/<ssn>", methods=["GET"])
@@ -141,7 +155,9 @@ def edit_employee_form(ssn):
         employee = cur.fetchone()
         
         if not employee:
-            flash("Employee not found", "error")
+            flash("Employee not found.", "error")
+            cur.close()
+            conn.close()
             return redirect(url_for("employee_management.manage_employees"))
         
         # Get departments for dropdown
@@ -155,7 +171,8 @@ def edit_employee_form(ssn):
                              employee=employee, departments=departments)
     
     except Exception as e:
-        flash(f"Error loading employee: {str(e)}", "error")
+        print(f"Error loading employee {ssn} for edit: {e}")
+        flash("An unexpected error occurred while loading the employee.", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
 # A5: Edit Employee Submission (admin only)
@@ -173,18 +190,20 @@ def edit_employee(ssn):
     
     # Validation
     if not all([address, salary, dno]):
-        flash("All fields are required", "error")
+        flash("All fields are required.", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
     
     try:
         salary = float(salary)
         if salary <= 0:
-            flash("Salary must be positive", "error")
+            flash("Salary must be positive.", "error")
             return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
     except ValueError:
-        flash("Salary must be a valid number", "error")
+        flash("Salary must be a valid number.", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
     
+    conn = None
+    cur = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -197,18 +216,26 @@ def edit_employee(ssn):
         """, (address, salary, dno, ssn))
         
         conn.commit()
-        cur.close()
-        conn.close()
         
-        flash("Employee updated successfully", "success")
+        flash("Employee updated successfully.", "success")
         return redirect(url_for("employee_management.manage_employees"))
     
     except errors.ForeignKeyViolation:
-        flash("Error: Invalid department number", "error")
+        if conn:
+            conn.rollback()
+        flash("Error: Invalid department number.", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
     except Exception as e:
-        flash(f"Error updating employee: {str(e)}", "error")
+        if conn:
+            conn.rollback()
+        print(f"Unexpected error updating employee {ssn}: {e}")
+        flash("An unexpected error occurred while updating the employee.", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # A5: Delete Employee (admin only)
 @employee_management_bp.route("/delete/<ssn>", methods=["POST"])
@@ -219,6 +246,8 @@ def delete_employee(ssn):
         flash("You do not have permission to delete employees.", "error")
         return redirect(url_for("employee_management.manage_employees"))
     
+    conn = None
+    cur = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -226,14 +255,29 @@ def delete_employee(ssn):
         # Try to delete employee
         cur.execute("DELETE FROM employee WHERE ssn = %s", (ssn,))
         conn.commit()
-        cur.close()
-        conn.close()
         
-        flash("Employee deleted successfully", "success")
+        flash("Employee deleted successfully.", "success")
     
     except errors.ForeignKeyViolation:
-        flash("Cannot delete employee: They are still assigned to projects, have dependents listed, or are a manager/supervisor.", "error")
+        if conn:
+            conn.rollback()
+        # User-friendly
+        flash(
+            "Cannot delete this employee because they are still assigned to projects, "
+            "have dependents, or are a manager/supervisor.",
+            "error"
+        )
     except Exception as e:
-        flash(f"Error deleting employee: {str(e)}", "error")
+        if conn:
+            conn.rollback()
+        # Log the real error server-side only
+        print(f"Unexpected error deleting employee {ssn}: {e}")
+        flash("An unexpected error occurred while deleting the employee.", "error")
+    
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
     
     return redirect(url_for("employee_management.manage_employees"))
