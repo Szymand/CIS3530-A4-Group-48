@@ -146,3 +146,9 @@ a {
 button.delete{
     background-color: #ff3b3b;
 }
+
+a.project-name {
+    color:blue;
+    text-decoration: underline;
+    
+}
