@@ -4,7 +4,7 @@ from psycopg import errors
 import csv
 from io import StringIO
 
-projects_bp = Blueprint("projects", __name__,url_prefix="/projects")
+projects_bp = Blueprint("projects", __name__, url_prefix="/projects")
 
 # A3 -- All Projects
 @projects_bp.route("/all", methods=["GET", "POST"])
@@ -15,13 +15,12 @@ def sort_projects():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    whitelisted_methods=["headcount", "total_hours", "project_number"]
-    whitelisted_directions=["ASC", "DESC"]
+    whitelisted_methods = ["headcount", "total_hours", "project_number"]
+    whitelisted_directions = ["ASC", "DESC"]
     
     method = "project_number"
     direction = "ASC"
-    if request.method == "POST": # On sorting options applied 
-        
+    if request.method == "POST":  # On sorting options applied 
         method = request.form.get("method", "")
         direction = request.form.get("direction", "")
         # Validate inputs against whitelisted options before querying  
@@ -48,7 +47,8 @@ def sort_projects():
     project_list = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("projects.html", projects=project_list, selected_method=method, selected_direction=direction)
+    return render_template("projects.html", projects=project_list,
+                           selected_method=method, selected_direction=direction)
 
 # A4 -- Project Details    
 @projects_bp.route("/<pnumber>", methods=["GET", "POST"])
@@ -84,14 +84,20 @@ def project_detail(pnumber):
             e.minit AS middle_initial,
             e.lname AS last_name
         FROM employee e;
-
         """
     )
     all_employees = cur.fetchall()
     
-    # A4 Part 2: Employee Upsert Form submission
+    # A4 Part 2: Employee Upsert Form submission (admin only)
     if request.method == "POST":
-        employee_n = int(request.form.get("employee", "")) # using index in case two employees have the same full name
+        # RBAC: only admins can modify hours
+        if session.get("role") != "admin":
+            flash("You do not have permission to modify project hours.", "error")
+            cur.close()
+            conn.close()
+            return redirect(url_for("projects.project_detail", pnumber=pnumber))
+
+        employee_n = int(request.form.get("employee", ""))  # using index in case two employees have the same full name
         hours = request.form.get("hours", "")
         
         cur.execute(
@@ -102,8 +108,8 @@ def project_detail(pnumber):
             """
         )
         employee_ssns = cur.fetchall()
-        target_ssn = employee_ssns[employee_n-1][0] #get the ssn of the employee we want
-        #add the employee to the works_on for that pnumber, or update their hours 
+        target_ssn = employee_ssns[employee_n - 1][0]  # get the ssn of the employee we want
+        # add the employee to works_on for that pnumber, or update their hours 
         try:
             cur.execute(
                 """
@@ -121,18 +127,27 @@ def project_detail(pnumber):
             flash("Cannot add more hours to employee (max hours is 999.9 per employee)", "error")
         cur.close()
         conn.close()
-        return redirect(url_for("projects.project_detail", pnumber=pnumber))    
+        return redirect(url_for("projects.project_detail", pnumber=pnumber))
+    
     cur.close()
     conn.close()
-    return render_template("project_detail.html", details=project_details, pnumber=pnumber, employees=all_employees)
+    return render_template("project_detail.html",
+                           details=project_details,
+                           pnumber=pnumber,
+                           employees=all_employees)
 
 @projects_bp.route("/download/<method>/<direction>", methods=["POST"])
 def download_projects(method, direction): 
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    whitelisted_methods=["headcount", "total_hours", "project_number"]
-    whitelisted_directions=["ASC", "DESC"]
+    # RBAC: treat export as an admin-only feature
+    if session.get("role") != "admin":
+        flash("You do not have permission to download project data.", "error")
+        return redirect(url_for("projects.sort_projects"))
+    
+    whitelisted_methods = ["headcount", "total_hours", "project_number"]
+    whitelisted_directions = ["ASC", "DESC"]
     
     # Validate inputs against whitelisted options before querying  
     if method not in whitelisted_methods:
