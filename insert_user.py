@@ -15,20 +15,30 @@ conn = psycopg.connect(
 
 cur = conn.cursor()
 
-username = "admin"
-password = "test123"   
-    
-
-password_hash = generate_password_hash(password)
+# --- ADMIN ACCOUNT ---
+admin_username = "admin"
+admin_password = "test123"
+admin_hash = generate_password_hash(admin_password)
 
 cur.execute("""
     INSERT INTO app_user (username, password_hash, role)
     VALUES (%s, %s, %s)
     ON CONFLICT (username) DO NOTHING;
-""", (username, password_hash, "admin"))
+""", (admin_username, admin_hash, "admin"))
+
+# --- VIEWER ACCOUNT ---
+viewer_username = "viewer"
+viewer_password = "viewer123"
+viewer_hash = generate_password_hash(viewer_password)
+
+cur.execute("""
+    INSERT INTO app_user (username, password_hash, role)
+    VALUES (%s, %s, %s)
+    ON CONFLICT (username) DO NOTHING;
+""", (viewer_username, viewer_hash, "viewer"))
 
 conn.commit()
 cur.close()
 conn.close()
 
-print("User created:", username)
+print("Users created: admin, viewer")

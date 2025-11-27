@@ -5,7 +5,7 @@ import openpyxl
 
 managers_bp = Blueprint("managers", __name__, url_prefix="/managers")
 
-# A6: Managers Overview
+# A6: Managers Overview (read-only for any logged-in user)
 @managers_bp.route("/overview")
 def managers_overview():
     if "user_id" not in session:
@@ -37,14 +37,17 @@ def managers_overview():
         
         return render_template("managers.html", departments=departments)
     
-    except Exception as e:
+    except Exception:
         return render_template("managers.html", departments=[])
 
-# Excel Import Bonus Feature
+# Excel Import Bonus Feature (admin only)
 @managers_bp.route("/import", methods=["GET"])
 def import_departments_form():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to import departments.", "error")
+        return redirect(url_for("managers.managers_overview"))
     
     return render_template("import_departments.html")
 
@@ -52,6 +55,9 @@ def import_departments_form():
 def import_departments():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to import departments.", "error")
+        return redirect(url_for("managers.managers_overview"))
     
     if 'file' not in request.files:
         flash('No file selected', 'error')

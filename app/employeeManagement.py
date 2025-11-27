@@ -4,7 +4,7 @@ from psycopg import errors
 
 employee_management_bp = Blueprint("employee_management", __name__, url_prefix="/employees")
 
-# A5: Employee List
+# A5: Employee List (viewable by any logged-in user)
 @employee_management_bp.route("/manage")
 def manage_employees():
     if "user_id" not in session:
@@ -32,11 +32,14 @@ def manage_employees():
         flash(f"Error loading employees: {str(e)}", "error")
         return render_template("employee_list.html", employees=[])
 
-# A5: Add Employee Form
+# A5: Add Employee Form (admin only)
 @employee_management_bp.route("/add", methods=["GET"])
 def add_employee_form():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to add employees.", "error")
+        return redirect(url_for("employee_management.manage_employees"))
     
     try:
         conn = get_db_connection()
@@ -55,11 +58,14 @@ def add_employee_form():
         flash(f"Error loading form: {str(e)}", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
-# A5: Add Employee Submission
+# A5: Add Employee Submission (admin only)
 @employee_management_bp.route("/add", methods=["POST"])
 def add_employee():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to add employees.", "error")
+        return redirect(url_for("employee_management.manage_employees"))
     
     ssn = request.form.get("ssn", "").strip()
     fname = request.form.get("fname", "").strip()
@@ -114,11 +120,14 @@ def add_employee():
         flash(f"Error adding employee: {str(e)}", "error")
         return redirect(url_for("employee_management.add_employee_form"))
 
-# A5: Edit Employee Form
+# A5: Edit Employee Form (admin only)
 @employee_management_bp.route("/edit/<ssn>", methods=["GET"])
 def edit_employee_form(ssn):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to edit employees.", "error")
+        return redirect(url_for("employee_management.manage_employees"))
     
     try:
         conn = get_db_connection()
@@ -149,11 +158,14 @@ def edit_employee_form(ssn):
         flash(f"Error loading employee: {str(e)}", "error")
         return redirect(url_for("employee_management.manage_employees"))
 
-# A5: Edit Employee Submission
+# A5: Edit Employee Submission (admin only)
 @employee_management_bp.route("/edit/<ssn>", methods=["POST"])
 def edit_employee(ssn):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to edit employees.", "error")
+        return redirect(url_for("employee_management.manage_employees"))
     
     address = request.form.get("address", "").strip()
     salary = request.form.get("salary", "").strip()
@@ -198,11 +210,14 @@ def edit_employee(ssn):
         flash(f"Error updating employee: {str(e)}", "error")
         return redirect(url_for("employee_management.edit_employee_form", ssn=ssn))
 
-# A5: Delete Employee
+# A5: Delete Employee (admin only)
 @employee_management_bp.route("/delete/<ssn>", methods=["POST"])
 def delete_employee(ssn):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if session.get("role") != "admin":
+        flash("You do not have permission to delete employees.", "error")
+        return redirect(url_for("employee_management.manage_employees"))
     
     try:
         conn = get_db_connection()
